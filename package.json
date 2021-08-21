@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app",
+    "start": "nodemon index.js",
     "test": "jest --watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "client": "cd client && npx http-server  -c-1 -p 8080 -P http://localhost:3000"
   },
   "repository": {
     "type": "git",
