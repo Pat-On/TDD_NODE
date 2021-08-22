@@ -103,4 +103,23 @@ describe('User Registration', () => {
         });
       });
   });
+
+  it('Hashes the password in database', (done) => {
+    //rest api is pointing that good practise is to put api/version/plural
+    request(app)
+      .post('/api/1.0/users')
+      .send({
+        username: 'user1',
+        email: 'user1@email.com',
+        password: 'P4ssword',
+      })
+      .then(() => {
+        // querry t db for a user if was created
+        User.findAll().then((userList) => {
+          const savedUser = userList[0];
+          expect(savedUser.password).not.toBe('P4ssword');
+          done();
+        });
+      });
+  });
 });
