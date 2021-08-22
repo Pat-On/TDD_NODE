@@ -11,4 +11,10 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.p
   logging: dbConfig.logging,
 });
 
+// const sequelize = new Sequelize('hoaxify', 'my-db-user', 'db-p4ss', {
+//   dialect: 'sqlite',
+//   storage: './database.sqlite',
+//   logging: false,
+// });
+
 module.exports = sequelize;

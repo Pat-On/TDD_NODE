@@ -27,17 +27,19 @@ beforeEach(() => {
 // INTEGRATION TESTS - they are not focues on how we implemented things
 // so because of that we can do with implementation what we want
 describe('User Registration', () => {
-  const postValidUser = () => {
-    return request(app).post('/api/1.0/users').send({
-      username: 'user1',
-      email: 'user1@email.com',
-      password: 'P4ssword',
-    });
+  const validUser = {
+    username: 'user1',
+    email: 'user1@email.com',
+    password: 'P4ssword',
+  };
+
+  const postUser = (user = validUser) => {
+    return request(app).post('/api/1.0/users').send(user);
   };
 
   it('returns 200 OK when signup request is valid with done', (done) => {
     //rest api is pointing that good practise is to put api/version/plural
-    postValidUser()
+    postUser()
       // expect is not async
       // if we want to mark it as async we need to pass done as a second argumeny
       // like he said without done it would solve test in sync way
@@ -47,20 +49,20 @@ describe('User Registration', () => {
   // another approach
   it('returns 200 OK when signup request is valid with then', (done) => {
     //rest api is pointing that good practise is to put api/version/plural
-    postValidUser().then((response) => {
+    postUser().then((response) => {
       expect(response.status).toBe(200);
       done();
     });
   });
 
   it('return success message when signup request is valid', async () => {
-    const response = await postValidUser();
+    const response = await postUser();
     //rest api is pointing that good practise is to put api/version/plural
     expect(response.body.message).toBe('User created');
   });
 
   it('saves the user to database', async () => {
-    await postValidUser();
+    await postUser();
     const usersList = await User.findAll();
     expect(usersList.length).toBe(1);
 
@@ -77,7 +79,7 @@ describe('User Registration', () => {
 
   it('Saves the username and email to database', (done) => {
     //rest api is pointing that good practise is to put api/version/plural
-    postValidUser().then(() => {
+    postUser().then(() => {
       // querry t db for a user if was created
       User.findAll().then((userList) => {
         const savedUser = userList[0];
@@ -90,7 +92,7 @@ describe('User Registration', () => {
 
   it('Hashes the password in database', (done) => {
     //rest api is pointing that good practise is to put api/version/plural
-    postValidUser().then(() => {
+    postUser().then(() => {
       // querry t db for a user if was created
       User.findAll().then((userList) => {
         const savedUser = userList[0];
@@ -98,5 +100,61 @@ describe('User Registration', () => {
         done();
       });
     });
+  });
+
+  // Section 4: Validation
+  it('return 400 when username is null', async () => {
+    const response = await postUser({
+      username: null,
+      email: 'user1@email.com',
+      password: 'P4ssword',
+    });
+    expect(response.status).toBe(400);
+  });
+
+  it('Returns validationErrors field in response body when validation errors occurs', async () => {
+    const response = await postUser({
+      username: null,
+      email: 'user1@email.com',
+      password: 'P4ssword',
+    });
+    const body = response.body;
+    // just check if it is existing
+    expect(body.validationErrors).not.toBeUndefined();
+  });
+
+  it('return username cannot be null when username is null', async () => {
+    const response = await postUser({
+      username: null,
+      email: 'user1@email.com',
+      password: 'P4ssword',
+    });
+    const body = response.body;
+    // just check if it is existing
+    expect(body.validationErrors.username).toBe('Username cannot be null');
+  });
+
+  it('return email cannot be null when email is null', async () => {
+    const response = await postUser({
+      username: 'user1',
+      email: null,
+      password: 'P4ssword',
+    });
+    const body = response.body;
+
+    expect(body.validationErrors.email).toBe('Email cannot be null');
+  });
+
+  it('return errors for both  when email and username is null', async () => {
+    const response = await postUser({
+      username: null,
+      email: null,
+      password: 'P4ssword',
+    });
+    const body = response.body;
+
+    // we do nopt care about the values because we already checked it before
+    // we have to be careful because it may come in differen order - order is important in that case
+    expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
   });
 });
