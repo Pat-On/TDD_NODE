@@ -30,6 +30,7 @@ router.post(
   // validateEmail,
   check('username').notEmpty().withMessage('Username cannot be null'),
   check('email').notEmpty().withMessage('Email cannot be null'),
+  check('password').notEmpty().withMessage('Password cannot be null'),
   async (req, res) => {
     // after refactoring - test are still passing
     const errors = validationResult(req);
