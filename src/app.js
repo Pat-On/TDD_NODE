@@ -8,6 +8,6 @@ app.use(express.json());
 app.use(UserRouter);
 
 //base we set value of it in the package.json file
-console.log('env: ' + process.env.NODE_ENV);
+// console.log('env: ' + process.env.NODE_ENV);
 
 module.exports = app;

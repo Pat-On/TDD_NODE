@@ -20,10 +20,9 @@ User.init(
   {
     // config
     sequelize,
-    modelName: 'User',
+    modelName: 'user',
   }
 );
-// synchronize
-sequelize.sync();
+// synchronize - just for production
 
 module.exports = User;

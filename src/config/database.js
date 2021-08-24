@@ -3,7 +3,7 @@ const config = require('config');
 
 const dbConfig = config.get('database');
 
-console.log('*****************', dbConfig.dialect);
+// console.log('*****************', dbConfig.dialect);
 const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
   dialect: dbConfig.dialect,
   storage: dbConfig.storage,
