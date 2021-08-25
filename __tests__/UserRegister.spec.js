@@ -3,13 +3,26 @@ const app = require('../src/app');
 
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
+// const { describe } = require('../src/user/User');
 /**
  * note: TDD has three steps:
  * 1. write our test
  * 2. implementation which fix test
  * 3. refactor - clean and reusable code
  */
+const validUser = {
+  username: 'user1',
+  email: 'user1@email.com',
+  password: 'P4ssword',
+};
 
+const postUser = (user = validUser, options = {}) => {
+  const agent = request(app).post('/api/1.0/users');
+  if (options.language) {
+    agent.set('Accept-Language', options.language);
+  }
+  return agent.send(user);
+};
 // this function will be ran before all test
 beforeAll(() => {
   // we need to initialize db
@@ -27,16 +40,6 @@ beforeEach(() => {
 // INTEGRATION TESTS - they are not focues on how we implemented things
 // so because of that we can do with implementation what we want
 describe('User Registration', () => {
-  const validUser = {
-    username: 'user1',
-    email: 'user1@email.com',
-    password: 'P4ssword',
-  };
-
-  const postUser = (user = validUser) => {
-    return request(app).post('/api/1.0/users').send(user);
-  };
-
   it('returns 200 OK when signup request is valid with done', (done) => {
     //rest api is pointing that good practise is to put api/version/plural
     postUser()
@@ -153,22 +156,31 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage);
   });
 
+  const username_null = 'Username cannot be null';
+  const username_size = 'Must have a min 4 and max 32 characters';
+  const email_null = 'Email cannot be null';
+  const email_invalid = 'Email is not valid';
+  const password_null = 'Password cannot be null';
+  const password_size = 'Password must be at least 6 characters';
+
+  const password_pattern = 'Password must have at least 1 uppercase, 1 lowercase letter and 1 number';
+  const email_in_use = 'E-mail in use';
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${'Username cannot be null'}
-    ${'username'} | ${'usr'}           | ${'Must have a min 4 and max 32 characters'}
-    ${'username'} | ${'a'.repeat(33)}  | ${'Must have a min 4 and max 32 characters'}
-    ${'email'}    | ${null}            | ${'Email cannot be null'}
-    ${'email'}    | ${'mail.com'}      | ${'Email is not valid'}
-    ${'email'}    | ${'user.mail.com'} | ${'Email is not valid'}
-    ${'email'}    | ${'user@mail'}     | ${'Email is not valid'}
-    ${'password'} | ${null}            | ${'Password cannot be null'}
-    ${'password'} | ${'P4ssw'}         | ${'Password must be at least 6 characters'}
-    ${'password'} | ${'alllowercase'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'ALLUPPERCASE'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'lowerUPPER'}    | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'12345678'}      | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'UPPER1234'}     | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'username'} | ${null}            | ${username_null}
+    ${'username'} | ${'usr'}           | ${username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${username_size}
+    ${'email'}    | ${null}            | ${email_null}
+    ${'email'}    | ${'mail.com'}      | ${email_invalid}
+    ${'email'}    | ${'user.mail.com'} | ${email_invalid}
+    ${'email'}    | ${'user@mail'}     | ${email_invalid}
+    ${'password'} | ${null}            | ${password_null}
+    ${'password'} | ${'P4ssw'}         | ${password_size}
+    ${'password'} | ${'alllowercase'}  | ${password_pattern}
+    ${'password'} | ${'ALLUPPERCASE'}  | ${password_pattern}
+    ${'password'} | ${'lowerUPPER'}    | ${password_pattern}
+    ${'password'} | ${'12345678'}      | ${password_pattern}
+    ${'password'} | ${'UPPER1234'}     | ${password_pattern}
   `('DYNAMIC: Returns $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
@@ -230,11 +242,11 @@ added as well to loop test
   //   expect(body.validationErrors.username).toBe('Must have a min 4 and max 32 characters');
   // });
 
-  it('return E-mail in use when email is already in use', async () => {
+  it(`return ${email_in_use} when email is already in use`, async () => {
     await User.create({ ...validUser });
     const response = await postUser(validUser);
 
-    expect(response.body.validationErrors.email).toBe('E-mail in use');
+    expect(response.body.validationErrors.email).toBe(email_in_use);
   });
 
   it('return for both username is null and email is in use', async () => {
@@ -246,5 +258,75 @@ added as well to loop test
     });
     const body = response.body;
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
+  });
+});
+
+/*
+        INTERNATIONALIZATION
+*/
+
+describe('Internationalization', () => {
+  const validUser = {
+    username: 'user1',
+    email: 'user1@email.com',
+    password: 'P4ssword',
+  };
+
+  // const postUser = (user = validUser) => {
+  //   return request(app).post('/api/1.0/users').set('Accept-Language', 'pl').send(user);
+  // };
+
+  const username_null = 'Uzytkownik nie moze byc null';
+  const username_size = 'Musi miec pomiedzy 4 a 32 symbole';
+  const email_null = 'Email nie moze byc null';
+  const email_invalid = 'Nieprawidlowy email';
+  const password_null = 'Haslo nie moze byc null';
+  const password_size = 'Haslo musi zawierac przynajmniej 6 symbol';
+  const password_pattern = 'Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny';
+  const email_in_use = 'Email uzyciu';
+  const user_create_successs = 'Udana rejestracja';
+
+  it.each`
+    field         | value              | expectedMessage
+    ${'username'} | ${null}            | ${username_null}
+    ${'username'} | ${'usr'}           | ${username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${username_size}
+    ${'email'}    | ${null}            | ${email_null}
+    ${'email'}    | ${'mail.com'}      | ${email_invalid}
+    ${'email'}    | ${'user.mail.com'} | ${email_invalid}
+    ${'email'}    | ${'user@mail'}     | ${email_invalid}
+    ${'password'} | ${null}            | ${password_null}
+    ${'password'} | ${'P4ssw'}         | ${password_size}
+    ${'password'} | ${'alllowercase'}  | ${password_pattern}
+    ${'password'} | ${'ALLUPPERCASE'}  | ${password_pattern}
+    ${'password'} | ${'lowerUPPER'}    | ${password_pattern}
+    ${'password'} | ${'12345678'}      | ${password_pattern}
+    ${'password'} | ${'UPPER1234'}     | ${password_pattern}
+  `(
+    'DYNAMIC: Returns $expectedMessage when $field is $value when language is set as a polish',
+    async ({ field, expectedMessage, value }) => {
+      const user = {
+        username: 'user1',
+        email: 'user1@email.com',
+        password: 'P4ssword',
+      };
+      user[field] = value;
+      const response = await postUser(user, { language: 'pl' });
+      const body = response.body;
+      expect(body.validationErrors[field]).toBe(expectedMessage);
+    }
+  );
+
+  it(`return ${user_create_successs} when signup request is valid and language is set as polish`, async () => {
+    const response = await postUser(validUser, { language: 'pl' });
+    //rest api is pointing that good practise is to put api/version/plural
+    expect(response.body.message).toBe(user_create_successs);
+  });
+
+  it(`return ${email_in_use} when email is already in use when language is set as a polish`, async () => {
+    await User.create({ ...validUser });
+    const response = await postUser(validUser, { language: 'pl' });
+
+    expect(response.body.validationErrors.email).toBe(email_in_use);
   });
 });

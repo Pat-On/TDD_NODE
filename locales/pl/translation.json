@@ -1,0 +1,12 @@
+{
+    "username_null": "Uzytkownik nie moze byc null",
+    "username_size": "Musi miec pomiedzy 4 a 32 symbole",
+    "email_null": "Email nie moze byc null",
+    "email_invalid": "Nieprawidlowy email",
+    "password_null": "Haslo nie moze byc null",
+    "password_size": "Haslo musi zawierac przynajmniej 6 symbol",
+    "password_pattern": "Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny",
+    "email_in_use": "Email uzyciu",
+    "user_create_success": "Udana rejestracja"
+  }
+  
