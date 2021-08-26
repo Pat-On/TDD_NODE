@@ -193,55 +193,6 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage);
   });
 
-  // Three tests replaced by the dynamic test
-
-  // it('return 400 when username is null', async () => {
-  //   const response = await postUser({
-  //     username: null,
-  //     email: 'user1@email.com',
-  //     password: 'P4ssword',
-  //   });
-  //   expect(response.status).toBe(400);
-  // });
-
-  // it('return username cannot be null when username is null', async () => {
-  //   const response = await postUser({
-  //     username: null,
-  //     email: 'user1@email.com',
-  //     password: 'P4ssword',
-  //   });
-  //   const body = response.body;
-  //   // just check if it is existing
-  //   expect(body.validationErrors.username).toBe('Username cannot be null');
-  // });
-
-  // it('return email cannot be null when email is null', async () => {
-  //   const response = await postUser({
-  //     username: 'user1',
-  //     email: null,
-  //     password: 'P4ssword',
-  //   });
-  //   const body = response.body;
-
-  //   expect(body.validationErrors.email).toBe('Email cannot be null');
-  // });
-
-  /*
-added as well to loop test
-*/
-
-  // it('Returns size validation error when username is less than 4 characters', async () => {
-  //   const user = {
-  //     username: 'usr',
-  //     email: 'user1@email.com',
-  //     password: 'P4ssword',
-  //   };
-
-  //   const response = await postUser(user);
-  //   const body = response.body;
-  //   expect(body.validationErrors.username).toBe('Must have a min 4 and max 32 characters');
-  // });
-
   it(`return ${email_in_use} when email is already in use`, async () => {
     await User.create({ ...validUser });
     const response = await postUser(validUser);
@@ -259,6 +210,28 @@ added as well to loop test
     const body = response.body;
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
   });
+
+  it('Create user in inactive mode', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+  it('Create user in inactive mode even the request body contains inactive as false', async () => {
+    const newUser = { ...validUser, inactive: false };
+    await postUser(newUser);
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+
+  it('Create an activationToken for user', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.activationToken).toBeTruthy();
+    // falsy: null, undefined, '', 0, false
+  });
 });
 
 /*
@@ -271,10 +244,6 @@ describe('Internationalization', () => {
     email: 'user1@email.com',
     password: 'P4ssword',
   };
-
-  // const postUser = (user = validUser) => {
-  //   return request(app).post('/api/1.0/users').set('Accept-Language', 'pl').send(user);
-  // };
 
   const username_null = 'Uzytkownik nie moze byc null';
   const username_size = 'Musi miec pomiedzy 4 a 32 symbole';
