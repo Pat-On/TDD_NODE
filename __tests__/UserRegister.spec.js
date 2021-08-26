@@ -1,6 +1,9 @@
 const request = require('supertest');
 const app = require('../src/app');
 
+// to mock the nodemailer
+const nodemailerStub = require('nodemailer-stub');
+
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 // const { describe } = require('../src/user/User');
@@ -231,6 +234,19 @@ describe('User Registration', () => {
     const savedUser = users[0];
     expect(savedUser.activationToken).toBeTruthy();
     // falsy: null, undefined, '', 0, false
+  });
+
+  // to test nodemailer we will have to mock the functionality of it.
+  // control behaving - so in future if we would like to replace this,
+  // we will have to replace the tests as well
+  it('send an account activation email with activationToken', async () => {
+    await postUser();
+    const lastMail = nodemailerStub.interactsWithMail.lastMail();
+    expect(lastMail.to).toContain('user1@email.com'); //last mail is the array
+    // expect(lastMail.to[0]).toBe('user1@email.com');
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(lastMail.content).toContain(savedUser.activationToken);
   });
 });
 
