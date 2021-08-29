@@ -8,6 +8,8 @@
     "password_pattern": "Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny",
     "email_in_use": "Email uzyciu",
     "user_create_success": "Udana rejestracja",
-    "email_failure": "Awaria serwisu email"
+    "email_failure": "Awaria serwisu email",
+    "account_activation_failure": "To konto zostalo juz aktywowane albo token jest niewazny",
+    "account_activation_success": "Konto jest aktywne"
   }
   

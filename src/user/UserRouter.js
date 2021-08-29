@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserService = require('./UserService');
 const { check, validationResult } = require('express-validator');
+// const User = require('./User');
 
 router.post(
   '/api/1.0/users',
@@ -58,5 +59,14 @@ router.post(
   }
 );
 
+router.post('/api/1.0/users/token/:activationToken', async (req, res) => {
+  const activationToken = req.params.activationToken;
+  try {
+    await UserService.activate(activationToken);
+  } catch (err) {
+    return res.status(400).send({ message: req.t(err.message) });
+  }
+  res.send({ message: req.t('account_activation_success') });
+});
 // CONSOEL
 module.exports = router;
