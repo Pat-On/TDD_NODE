@@ -7,6 +7,7 @@
     "password_size": "Haslo musi zawierac przynajmniej 6 symbol",
     "password_pattern": "Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny",
     "email_in_use": "Email uzyciu",
-    "user_create_success": "Udana rejestracja"
+    "user_create_success": "Udana rejestracja",
+    "email_failure": "Awaria serwisu email"
   }
   
