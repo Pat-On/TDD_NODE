@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserService = require('./UserService');
 const { check, validationResult } = require('express-validator');
+const ValidationException = require('../error/ValidationException');
 // const User = require('./User');
 
 router.post(
@@ -36,7 +37,7 @@ router.post(
     .bail()
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
     .withMessage('password_pattern'),
-  async (req, res) => {
+  async (req, res, next) => {
     // after refactoring - test are still passing
     const errors = validationResult(req);
     // if (req.validationErrors) {
@@ -44,29 +45,33 @@ router.post(
     //   return res.status(400).send(response);
     // }
     if (!errors.isEmpty()) {
-      const validationErrors = {};
-      errors.array().forEach((error) => (validationErrors[error.param] = req.t(error.msg)));
+      // const validationErrors = {};
+      // errors.array().forEach((error) => (validationErrors[error.param] = req.t(error.msg)));
       // const response = { validationErrors: { ...req.validationErrors } };
-      return res.status(400).send({ validationErrors: validationErrors });
+      // return res.status(400).send({ validationErrors: validationErrors });
+      return next(new ValidationException(errors.array()));
     }
     try {
       await UserService.save(req.body);
       return res.status(200).send({ message: req.t('user_create_success') });
       // first part he checked conection (1)
     } catch (err) {
-      return res.status(502).send({ message: req.t(err.message) });
+      // return res.status(502).send({ message: req.t(err.message) });
+      next(err);
     }
   }
 );
 
-router.post('/api/1.0/users/token/:activationToken', async (req, res) => {
+router.post('/api/1.0/users/token/:activationToken', async (req, res, next) => {
   const activationToken = req.params.activationToken;
   try {
     await UserService.activate(activationToken);
+    return res.send({ message: req.t('account_activation_success') });
   } catch (err) {
-    return res.status(400).send({ message: req.t(err.message) });
+    // return res.status(400).send({ message: req.t(err.message) });
+    next(err);
   }
-  res.send({ message: req.t('account_activation_success') });
 });
+
 // CONSOEL
 module.exports = router;

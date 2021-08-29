@@ -10,6 +10,7 @@
     "user_create_success": "Udana rejestracja",
     "email_failure": "Awaria serwisu email",
     "account_activation_failure": "To konto zostalo juz aktywowane albo token jest niewazny",
-    "account_activation_success": "Konto jest aktywne"
+    "account_activation_success": "Konto jest aktywne",
+    "validation_failure": "Blad Walidacji"
   }
   
