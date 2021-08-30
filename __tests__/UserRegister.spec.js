@@ -1,10 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
 
-const SMTPServer = require('smtp-server').SMTPServer;
-
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
+
+const SMTPServer = require('smtp-server').SMTPServer;
 
 /**
  * note: TDD has three steps:
