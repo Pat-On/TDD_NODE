@@ -6,6 +6,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=development nodemon index",
     "test": "cross-env NODE_ENV=test jest --watch",
+    "testDetails": "cross-env NODE_ENV=test jest --watch --verbose",
     "lint": "eslint .",
     "client": "cd client && npx http-server  -c-1 -p 8080 -P http://localhost:3000"
   },

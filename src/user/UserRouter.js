@@ -3,6 +3,7 @@ const router = express.Router();
 const UserService = require('./UserService');
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
+const User = require('./User');
 // const User = require('./User');
 
 router.post(
@@ -71,6 +72,11 @@ router.post('/api/1.0/users/token/:activationToken', async (req, res, next) => {
     // return res.status(400).send({ message: req.t(err.message) });
     next(err);
   }
+});
+
+router.get('/api/1.0/users', async (req, res) => {
+  const users = await UserService.getUsers();
+  res.send(users);
 });
 
 // CONSOEL
