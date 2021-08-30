@@ -5,6 +5,7 @@ const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 // const User = require('./User');
 const pagination = require('../middleware/pagination');
+// const UserNotFoundException = require('./UserNotFoundException');
 
 router.post(
   '/api/1.0/users',
@@ -78,6 +79,16 @@ router.get('/api/1.0/users', pagination, async (req, res) => {
   const { page, size } = req.pagination;
   const users = await UserService.getUsers(page, size);
   res.send(users);
+});
+
+router.get('/api/1.0/users/:id', async (req, res, next) => {
+  // res.status(404).send({ message: req.t('user_not_found') });
+  try {
+    const user = await UserService.getUser(req.params.id);
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // CONSOEL
