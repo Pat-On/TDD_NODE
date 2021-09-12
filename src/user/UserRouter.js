@@ -3,6 +3,7 @@ const router = express.Router();
 const UserService = require('./UserService');
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
+const ForbiddenException = require('../error/ForbiddenException');
 // const User = require('./User');
 const pagination = require('../middleware/pagination');
 // const UserNotFoundException = require('./UserNotFoundException');
@@ -89,6 +90,12 @@ router.get('/api/1.0/users/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.put('/api/1.0/users/:id', () => {
+  throw new ForbiddenException('unauthorized_user_update');
+
+  // res.status(403).send();
 });
 
 // CONSOEL

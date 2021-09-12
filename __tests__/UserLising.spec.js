@@ -3,14 +3,16 @@ const app = require('../src/app');
 
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
+const en = require('../locales/en/translation.json');
+const pl = require('../locales/pl/translation.json');
 
 beforeAll(async () => {
   // we need to initialize db
-  return sequelize.sync();
+  await sequelize.sync();
 });
 // called before each test
-beforeEach(() => {
-  return User.destroy({ truncate: true });
+beforeEach(async () => {
+  await User.destroy({ truncate: true });
 });
 
 const getUsers = () => {
@@ -124,8 +126,8 @@ describe('Get user', () => {
 
   it.each`
     language | message
-    ${'pl'}  | ${'Uzytkownik nie znaleziony'}
-    ${'en'}  | ${'User not found'}
+    ${'pl'}  | ${pl.user_not_found}
+    ${'en'}  | ${en.user_not_found}
   `('returns $message for unknow user when language is set to $language', async ({ language, message }) => {
     const response = await getUser().set('Accept-Language', language);
     expect(response.body.message).toBe(message);

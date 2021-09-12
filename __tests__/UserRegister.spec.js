@@ -5,7 +5,8 @@ const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 
 const SMTPServer = require('smtp-server').SMTPServer;
-
+const en = require('../locales/en/translation.json');
+const pl = require('../locales/pl/translation.json');
 /**
  * note: TDD has three steps:
  * 1. write our test
@@ -50,17 +51,21 @@ beforeAll(async () => {
   });
   await server.listen(8587, 'localhost');
   // we need to initialize db
-  return sequelize.sync();
+  await sequelize.sync();
+  // setting timeout
+  jest.setTimeout(20000);
 });
 // called before each test
-beforeEach(() => {
+beforeEach(async () => {
   simulateSmtpFailure = false;
   // cleaning user table before each table
-  return User.destroy({ truncate: true });
+  await User.destroy({ truncate: true });
 });
 
 afterAll(async () => {
   await server.close();
+  // setting back timeout back to 5 seconds
+  jest.setTimeout(5000);
 });
 //Importan: each test has to be isolated to it has to run and to not have impact on
 // results of other test - reliable - in that case db with predictable state
@@ -68,6 +73,9 @@ afterAll(async () => {
 // INTEGRATION TESTS - they are not focues on how we implemented things
 // so because of that we can do with implementation what we want
 describe('User Registration', () => {
+  // in case of failing the test on slower machine when server on backend is standing up
+  // third argument in it() function - it depends from the environment
+
   it('returns 200 OK when signup request is valid with done', (done) => {
     simulateSmtpFailure = false;
     //rest api is pointing that good practise is to put api/version/plural
@@ -76,7 +84,7 @@ describe('User Registration', () => {
       // if we want to mark it as async we need to pass done as a second argumeny
       // like he said without done it would solve test in sync way
       .expect(200, done);
-  });
+  }, 15000);
 
   // another approach
   it('returns 200 OK when signup request is valid with then', (done) => {
@@ -85,13 +93,13 @@ describe('User Registration', () => {
       expect(response.status).toBe(200);
       done();
     });
-  });
+  }, 15000);
 
   it('return success message when signup request is valid', async () => {
     const response = await postUser();
     //rest api is pointing that good practise is to put api/version/plural
-    expect(response.body.message).toBe('User created');
-  });
+    expect(response.body.message).toBe(en.user_create_success);
+  }, 15000);
 
   it('saves the user to database', async () => {
     await postUser();
@@ -185,31 +193,31 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage);
   });
 
-  const username_null = 'Username cannot be null';
-  const username_size = 'Must have a min 4 and max 32 characters';
-  const email_null = 'Email cannot be null';
-  const email_invalid = 'Email is not valid';
-  const password_null = 'Password cannot be null';
-  const password_size = 'Password must be at least 6 characters';
+  // const username_null = 'Username cannot be null';
+  // const username_size = 'Must have a min 4 and max 32 characters';
+  // const email_null = 'Email cannot be null';
+  // const email_invalid = 'Email is not valid';
+  // const password_null = 'Password cannot be null';
+  // const password_size = 'Password must be at least 6 characters';
 
-  const password_pattern = 'Password must have at least 1 uppercase, 1 lowercase letter and 1 number';
-  const email_in_use = 'E-mail in use';
+  // const password_pattern = 'Password must have at least 1 uppercase, 1 lowercase letter and 1 number';
+  // const email_in_use = 'E-mail in use';
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${username_null}
-    ${'username'} | ${'usr'}           | ${username_size}
-    ${'username'} | ${'a'.repeat(33)}  | ${username_size}
-    ${'email'}    | ${null}            | ${email_null}
-    ${'email'}    | ${'mail.com'}      | ${email_invalid}
-    ${'email'}    | ${'user.mail.com'} | ${email_invalid}
-    ${'email'}    | ${'user@mail'}     | ${email_invalid}
-    ${'password'} | ${null}            | ${password_null}
-    ${'password'} | ${'P4ssw'}         | ${password_size}
-    ${'password'} | ${'alllowercase'}  | ${password_pattern}
-    ${'password'} | ${'ALLUPPERCASE'}  | ${password_pattern}
-    ${'password'} | ${'lowerUPPER'}    | ${password_pattern}
-    ${'password'} | ${'12345678'}      | ${password_pattern}
-    ${'password'} | ${'UPPER1234'}     | ${password_pattern}
+    ${'username'} | ${null}            | ${en.username_null}
+    ${'username'} | ${'usr'}           | ${en.username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${en.username_size}
+    ${'email'}    | ${null}            | ${en.email_null}
+    ${'email'}    | ${'mail.com'}      | ${en.email_invalid}
+    ${'email'}    | ${'user.mail.com'} | ${en.email_invalid}
+    ${'email'}    | ${'user@mail'}     | ${en.email_invalid}
+    ${'password'} | ${null}            | ${en.password_null}
+    ${'password'} | ${'P4ssw'}         | ${en.password_size}
+    ${'password'} | ${'alllowercase'}  | ${en.password_pattern}
+    ${'password'} | ${'ALLUPPERCASE'}  | ${en.password_pattern}
+    ${'password'} | ${'lowerUPPER'}    | ${en.password_pattern}
+    ${'password'} | ${'12345678'}      | ${en.password_pattern}
+    ${'password'} | ${'UPPER1234'}     | ${en.password_pattern}
   `('DYNAMIC: Returns $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
@@ -222,11 +230,11 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage);
   });
 
-  it(`return ${email_in_use} when email is already in use`, async () => {
+  it(`return ${en.email_in_use} when email is already in use`, async () => {
     await User.create({ ...validUser });
     const response = await postUser(validUser);
 
-    expect(response.body.validationErrors.email).toBe(email_in_use);
+    expect(response.body.validationErrors.email).toBe(en.email_in_use);
   });
 
   it('return for both username is null and email is in use', async () => {
@@ -316,33 +324,33 @@ describe('Internationalization', () => {
     password: 'P4ssword',
   };
 
-  const username_null = 'Uzytkownik nie moze byc null';
-  const username_size = 'Musi miec pomiedzy 4 a 32 symbole';
-  const email_null = 'Email nie moze byc null';
-  const email_invalid = 'Nieprawidlowy email';
-  const password_null = 'Haslo nie moze byc null';
-  const password_size = 'Haslo musi zawierac przynajmniej 6 symbol';
-  const password_pattern = 'Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny';
-  const email_in_use = 'Email uzyciu';
-  const user_create_successs = 'Udana rejestracja';
-  const email_failure = 'Awaria serwisu email';
-  const validation_error = 'Blad Walidacji';
+  // const username_null = 'Uzytkownik nie moze byc null';
+  // const username_size = 'Musi miec pomiedzy 4 a 32 symbole';
+  // const email_null = 'Email nie moze byc null';
+  // const email_invalid = 'Nieprawidlowy email';
+  // const password_null = 'Haslo nie moze byc null';
+  // const password_size = 'Haslo musi zawierac przynajmniej 6 symbol';
+  // const password_pattern = 'Haslo musi zawierac przynajmniej 1 litere, 1 cyfre i 1 znak specjalny';
+  // const email_in_use = 'Email uzyciu';
+  // const user_create_successs = 'Udana rejestracja';
+  // const email_failure = 'Awaria serwisu email';
+  // const validation_error = 'Blad Walidacji';
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${username_null}
-    ${'username'} | ${'usr'}           | ${username_size}
-    ${'username'} | ${'a'.repeat(33)}  | ${username_size}
-    ${'email'}    | ${null}            | ${email_null}
-    ${'email'}    | ${'mail.com'}      | ${email_invalid}
-    ${'email'}    | ${'user.mail.com'} | ${email_invalid}
-    ${'email'}    | ${'user@mail'}     | ${email_invalid}
-    ${'password'} | ${null}            | ${password_null}
-    ${'password'} | ${'P4ssw'}         | ${password_size}
-    ${'password'} | ${'alllowercase'}  | ${password_pattern}
-    ${'password'} | ${'ALLUPPERCASE'}  | ${password_pattern}
-    ${'password'} | ${'lowerUPPER'}    | ${password_pattern}
-    ${'password'} | ${'12345678'}      | ${password_pattern}
-    ${'password'} | ${'UPPER1234'}     | ${password_pattern}
+    ${'username'} | ${null}            | ${pl.username_null}
+    ${'username'} | ${'usr'}           | ${pl.username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${pl.username_size}
+    ${'email'}    | ${null}            | ${pl.email_null}
+    ${'email'}    | ${'mail.com'}      | ${pl.email_invalid}
+    ${'email'}    | ${'user.mail.com'} | ${pl.email_invalid}
+    ${'email'}    | ${'user@mail'}     | ${pl.email_invalid}
+    ${'password'} | ${null}            | ${pl.password_null}
+    ${'password'} | ${'P4ssw'}         | ${pl.password_size}
+    ${'password'} | ${'alllowercase'}  | ${pl.password_pattern}
+    ${'password'} | ${'ALLUPPERCASE'}  | ${pl.password_pattern}
+    ${'password'} | ${'lowerUPPER'}    | ${pl.password_pattern}
+    ${'password'} | ${'12345678'}      | ${pl.password_pattern}
+    ${'password'} | ${'UPPER1234'}     | ${pl.password_pattern}
   `(
     'DYNAMIC: Returns $expectedMessage when $field is $value when language is set as a polish',
     async ({ field, expectedMessage, value }) => {
@@ -358,27 +366,27 @@ describe('Internationalization', () => {
     }
   );
 
-  it(`return ${user_create_successs} when signup request is valid and language is set as polish`, async () => {
+  it(`return ${pl.user_create_successs} when signup request is valid and language is set as polish`, async () => {
     const response = await postUser(validUser, { language: 'pl' });
     //rest api is pointing that good practise is to put api/version/plural
-    expect(response.body.message).toBe(user_create_successs);
+    expect(response.body.message).toBe(pl.user_create_success);
   });
 
-  it(`return ${email_in_use} when email is already in use when language is set as a polish`, async () => {
+  it(`return ${pl.email_in_use} when email is already in use when language is set as a polish`, async () => {
     await User.create({ ...validUser });
     const response = await postUser(validUser, { language: 'pl' });
 
-    expect(response.body.validationErrors.email).toBe(email_in_use);
+    expect(response.body.validationErrors.email).toBe(pl.email_in_use);
   });
 
-  it(`returns ${email_failure} message when sending emails fails and language is set as polish`, async () => {
+  it(`returns ${pl.email_failure} message when sending emails fails and language is set as polish`, async () => {
     simulateSmtpFailure = true;
     const response = await postUser({ ...validUser }, { language: 'pl' });
 
-    expect(response.body.message).toBe(email_failure);
+    expect(response.body.message).toBe(pl.email_failure);
   });
 
-  it(`returns ${validation_error} message in  error respondse body when `, async () => {
+  it(`returns ${pl.validation_failure} message in  error respondse body when `, async () => {
     const response = await postUser(
       {
         username: null,
@@ -387,7 +395,7 @@ describe('Internationalization', () => {
       },
       { language: 'pl' }
     );
-    expect(response.body.message).toBe(validation_error);
+    expect(response.body.message).toBe(pl.validation_failure);
   });
 });
 
@@ -437,10 +445,10 @@ describe('Account activation', () => {
 
   it.each`
     language | tokenStatus  | message
-    ${'pl'}  | ${'wrong'}   | ${'To konto zostalo juz aktywowane albo token jest niewazny'}
-    ${'en'}  | ${'wrong'}   | ${'This account is either active or the token is invalid'}
-    ${'pl'}  | ${'correct'} | ${'Konto jest aktywne'}
-    ${'en'}  | ${'correct'} | ${'Account is activated'}
+    ${'pl'}  | ${'wrong'}   | ${pl.account_activation_failure}
+    ${'en'}  | ${'wrong'}   | ${en.account_activation_failure}
+    ${'pl'}  | ${'correct'} | ${pl.account_activation_success}
+    ${'en'}  | ${'correct'} | ${en.account_activation_success}
   `(
     'returns $message when  token is ${tokenStatus} sent and language is $language',
     async ({ language, message, tokenStatus }) => {

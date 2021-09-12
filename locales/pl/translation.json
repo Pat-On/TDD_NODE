@@ -14,6 +14,7 @@
     "validation_failure": "Blad Walidacji",
     "user_not_found": "Uzytkownik nie znaleziony",
     "authentication_failure": "nieprawidlowe haslo lub email",
-    "inactive_authentication_failure": "Konto jest niekatywne"
+    "inactive_authentication_failure": "Konto jest niekatywne",
+    "unauthorized_user_update": "Nie jestes autoryzowany aby przprowadzic update uzytkownika"
   }
   
