@@ -7,6 +7,8 @@ const ForbiddenException = require('../error/ForbiddenException');
 // const User = require('./User');
 const pagination = require('../middleware/pagination');
 // const UserNotFoundException = require('./UserNotFoundException');
+// const bcrypt = require('bcrypt');
+const basicAuthentication = require('../middleware/basicAuthentication');
 
 router.post(
   '/api/1.0/users',
@@ -92,8 +94,13 @@ router.get('/api/1.0/users/:id', async (req, res, next) => {
   }
 });
 
-router.put('/api/1.0/users/:id', () => {
-  throw new ForbiddenException('unauthorized_user_update');
+router.put('/api/1.0/users/:id', basicAuthentication, async (req, res, next) => {
+  const authenticatedUser = req.body.authenticatedUser;
+  if (!authenticatedUser || authenticatedUser.id !== +req.params.id) {
+    return next(new ForbiddenException('unauthorized_user_update'));
+  }
+  await UserService.updateUser(req.params.id, req.body);
+  return res.status(200).send();
 
   // res.status(403).send();
 });
