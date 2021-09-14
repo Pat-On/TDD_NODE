@@ -5,6 +5,7 @@ const Backend = require('i18next-fs-backend');
 const middleware = require('i18next-http-middleware');
 const errorHandler = require('./error/ErrorHandler');
 const AuthenticationRouter = require('./auth/AuthenticationRouter');
+const cors = require('cors');
 
 i18next
   .use(Backend)
@@ -24,6 +25,8 @@ i18next
   });
 
 const app = express();
+
+app.use(cors());
 
 app.use(middleware.handle(i18next));
 

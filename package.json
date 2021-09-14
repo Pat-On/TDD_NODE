@@ -8,7 +8,7 @@
     "test": "cross-env NODE_ENV=test jest --watch",
     "testDetails": "cross-env NODE_ENV=test jest --watch --verbose",
     "lint": "eslint .",
-    "client": "cd client && npx http-server  -c-1 -p 8080 -P http://localhost:3000"
+    "client": "cd client && npx http-server --cors -c-1 -p 8080 -P http://localhost:3000"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "config": "^3.3.6",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-validator": "^6.12.1",
     "i18next": "^20.4.0",

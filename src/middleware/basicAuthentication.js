@@ -11,9 +11,11 @@ const basicAuthentication = async (req, res, next) => {
     const [email, password] = decoded.split(':');
     const user = await UserService.findByEmail(email);
     // console.log(email);
-    if (user && user.inactive) {
+    if (user && !user.inactive) {
       const match = await bcrypt.compare(password, user.password);
-      if (match) req.authenticatedUser = user;
+      if (match) {
+        req.authenticatedUser = user;
+      }
     }
   }
   next();
