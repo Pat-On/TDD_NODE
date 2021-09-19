@@ -20,7 +20,12 @@ const verify = async (token) => {
   // return jwt.verify(token, 'this-is-our-secret');
 };
 
+const deleteToken = async (token) => {
+  await Token.destroy({ where: { token: token } });
+};
+
 module.exports = {
   createToken,
   verify,
+  deleteToken,
 };
